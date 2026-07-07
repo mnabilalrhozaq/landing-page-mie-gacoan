@@ -82,10 +82,11 @@ function Particles() {
 
 export default function ParticleBackground() {
   return (
-    <div className="absolute inset-0 w-full h-full -z-10 bg-gradient-to-b from-[#fafafa] to-[#f3f6f5]">
+    <div className="absolute inset-0 w-full h-full">
       <Canvas
         camera={{ position: [0, 0, 5], fov: 60 }}
-        gl={{ antialias: true }}
+        gl={{ antialias: true, alpha: true }}
+        onCreated={({ gl }) => gl.setClearAlpha(0)}
         dpr={[1, 2]}
       >
         <ambientLight intensity={0.6} />

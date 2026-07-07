@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import { join } from "path";
 import { verifyAuth, unauthorizedResponse } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { uploadToStorage, deleteFromStorage } from "@/lib/supabase-storage";
 import { revalidatePath } from "next/cache";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const auth = await verifyAuth(request);
   if (!auth) return unauthorizedResponse();
 
@@ -13,33 +15,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const id = parseInt(params.id);
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    
+
     if (!file) {
       return NextResponse.json({ error: "File gambar tidak ditemukan!" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadDir = join(process.cwd(), "public", "uploads", "menus");
-    await mkdir(uploadDir, { recursive: true });
-
-    const filename = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-    const filePath = join(uploadDir, filename);
-    await writeFile(filePath, buffer);
-
-    const imageUrl = `/uploads/menus/${filename}`;
-
-    // Clean up old image if present
+    // Hapus gambar lama dari Supabase Storage jika ada
     const current = await prisma.menu.findUnique({ where: { id } });
-    if (current && current.image && current.image.startsWith("/uploads/menus/")) {
-      try {
-        const oldPath = join(process.cwd(), "public", current.image);
-        await unlink(oldPath);
-      } catch (err) {
-        // ignore
-      }
+    if (current?.image?.startsWith("https://")) {
+      await deleteFromStorage("menus", current.image).catch(() => {});
     }
+
+    const imageUrl = await uploadToStorage("menus", file);
 
     await prisma.menu.update({
       where: { id },
@@ -50,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     revalidatePath("/menu");
 
     return NextResponse.json({ imageUrl });
-  } catch (err) {
-    return NextResponse.json({ error: "Gagal mengunggah gambar menu" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Gagal mengunggah gambar menu" }, { status: 500 });
   }
 }

@@ -47,7 +47,7 @@ Gunakan akun berikut untuk login ke Portal Administrasi:
 
 - **Halaman Login**: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
 - **Email**: `admin@miegacoan.com`
-- **Password**: `password123`
+- **Password**: `nabilar123`
 
 ---
 

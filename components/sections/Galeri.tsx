@@ -22,7 +22,7 @@ export function Galeri({ galleries = [] }: GaleriSectionProps) {
   ];
 
   return (
-    <section id="galeri" className="relative py-20 px-4 md:px-8 bg-light scroll-mt-20">
+    <section id="galeri" className="relative py-20 px-4 md:px-8 bg-light overflow-hidden scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header */}
         <TypewriterEffectSmooth words={titleWords} />

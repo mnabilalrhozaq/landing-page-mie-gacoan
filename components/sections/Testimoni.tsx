@@ -61,7 +61,7 @@ export function Testimoni({ testimonials = [] }: TestimoniSectionProps) {
   };
 
   return (
-    <section id="testimoni" className="relative py-20 px-4 md:px-8 bg-white scroll-mt-20">
+    <section id="testimoni" className="relative py-20 px-4 md:px-8 bg-white overflow-hidden scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header */}
         <TypewriterEffectSmooth words={titleWords} />

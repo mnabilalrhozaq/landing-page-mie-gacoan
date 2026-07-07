@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import { verifyAuth, unauthorizedResponse } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { uploadToStorage, deleteFromStorage } from "@/lib/supabase-storage";
 import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
@@ -25,19 +24,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData();
-    // Support multiple files under "files" key
     const files = formData.getAll("files") as File[];
-    
+
     if (!files || files.length === 0) {
       return NextResponse.json({ error: "File gambar tidak ditemukan!" }, { status: 400 });
     }
 
     const category = (formData.get("category") as string) || "Umum";
 
-    const uploadDir = join(process.cwd(), "public", "uploads", "galleries");
-    await mkdir(uploadDir, { recursive: true });
-
-    // Determine the next order index
     const latestGallery = await prisma.gallery.findFirst({
       orderBy: { order: "desc" },
     });
@@ -46,20 +40,13 @@ export async function POST(request: NextRequest) {
     const createdItems = [];
 
     for (const file of files) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const filename = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-      const filePath = join(uploadDir, filename);
-      await writeFile(filePath, buffer);
-
-      const imageUrl = `/uploads/galleries/${filename}`;
+      const imageUrl = await uploadToStorage("galleries", file);
 
       const gallery = await prisma.gallery.create({
         data: {
           image: imageUrl,
           caption: file.name.substring(0, file.name.lastIndexOf(".")),
-          category: category,
+          category,
           order: currentOrder++,
         },
       });
@@ -67,9 +54,8 @@ export async function POST(request: NextRequest) {
     }
 
     revalidatePath("/");
-
     return NextResponse.json(createdItems, { status: 201 });
-  } catch (err) {
-    return NextResponse.json({ error: "Gagal mengunggah foto galeri" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Gagal mengunggah foto galeri" }, { status: 500 });
   }
 }

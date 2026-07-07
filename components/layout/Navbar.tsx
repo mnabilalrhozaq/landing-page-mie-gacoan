@@ -120,7 +120,7 @@ export function Navbar({ logoUrl }: NavbarProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 top-[60px] bg-white z-40 lg:hidden flex flex-col px-6 py-8 shadow-inner overflow-y-auto"
+            className="fixed inset-0 top-[64px] bg-white z-40 lg:hidden flex flex-col px-6 py-8 shadow-inner overflow-y-auto"
           >
             <div className="flex flex-col gap-4">
               {tabsList.map((tab) => {

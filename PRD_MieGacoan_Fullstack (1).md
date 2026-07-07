@@ -1311,7 +1311,7 @@ async function main() {
     data: {
       name:     'Admin Mie Gacoan',
       email:    'admin@miegacoan.com',
-      password: await bcrypt.hash('password123', 10),
+      password: await bcrypt.hash('nabilar123', 10),
     },
   })
 

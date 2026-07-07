@@ -59,7 +59,7 @@ export function Outlets({ outlets = [] }: OutletsSectionProps) {
   };
 
   return (
-    <section id="outlets" className="relative py-20 px-4 md:px-8 bg-white scroll-mt-20">
+    <section id="outlets" className="relative py-20 px-4 md:px-8 bg-white overflow-hidden scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header */}
         <TypewriterEffectSmooth words={titleWords} />
@@ -124,12 +124,12 @@ export function Outlets({ outlets = [] }: OutletsSectionProps) {
                 key={outlet.id}
                 variants={cardVariants}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-light border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group text-left"
+                className="bg-white border border-gray-150/70 rounded-[32px] p-6 shadow-xs flex flex-col justify-between hover:shadow-xl hover:scale-[1.01] transition-all duration-300 relative overflow-hidden group text-left"
               >
                 {/* Visual Accent */}
-                <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:bg-primary transition-colors" />
+                <div className="absolute top-0 left-0 w-2.5 h-full bg-secondary group-hover:bg-primary transition-colors" />
 
-                <div className="flex flex-col gap-4 pl-2">
+                <div className="flex flex-col gap-4 pl-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-secondary tracking-widest">{outlet.city}</span>
@@ -140,11 +140,13 @@ export function Outlets({ outlets = [] }: OutletsSectionProps) {
 
                     {/* Status Badge */}
                     {outlet.isOpen ? (
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-inner select-none whitespace-nowrap">
+                      <span className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/60 text-emerald-600 text-[10px] font-extrabold px-3 py-1 rounded-full select-none whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Buka
                       </span>
                     ) : (
-                      <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-inner select-none whitespace-nowrap">
+                      <span className="flex items-center gap-1.5 bg-rose-50 border border-rose-200/60 text-rose-500 text-[10px] font-extrabold px-3 py-1 rounded-full select-none whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
                         Tutup
                       </span>
                     )}

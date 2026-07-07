@@ -35,7 +35,7 @@ export function About({
   const c3 = useCounter(maxPelanggan * 10, 0, 2); // scale by 10 for smooth count
 
   return (
-    <section id="about" className="relative py-20 px-4 md:px-8 bg-light scroll-mt-20">
+    <section id="about" className="relative py-20 px-4 md:px-8 bg-light overflow-hidden scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header */}
         <TypewriterEffectSmooth words={aboutWords} />
@@ -71,15 +71,14 @@ export function About({
 
           {/* Right: Counter Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
-            {/* Stat Card 1 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center gap-3 hover:shadow-md transition-shadow"
+              className="bg-white p-8 rounded-[32px] border border-gray-150/70 shadow-xs flex flex-col items-center justify-center text-center gap-3 hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
-              <div className="p-3.5 bg-secondary/15 text-secondary rounded-2xl">
+              <div className="p-4 bg-secondary/10 text-secondary rounded-full">
                 <Store className="w-6 h-6" />
               </div>
               <div ref={c1.ref} className="font-heading text-5xl font-bold text-dark mt-2">
@@ -88,15 +87,14 @@ export function About({
               <span className="font-body text-gray-500 text-xs font-semibold uppercase tracking-wider">Cabang</span>
             </motion.div>
 
-            {/* Stat Card 2 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center gap-3 hover:shadow-md transition-shadow"
+              className="bg-white p-8 rounded-[32px] border border-gray-150/70 shadow-xs flex flex-col items-center justify-center text-center gap-3 hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
-              <div className="p-3.5 bg-primary/10 text-primary rounded-2xl">
+              <div className="p-4 bg-primary/10 text-primary rounded-full">
                 <Calendar className="w-6 h-6" />
               </div>
               <div ref={c2.ref} className="font-heading text-5xl font-bold text-dark mt-2">
@@ -105,15 +103,14 @@ export function About({
               <span className="font-body text-gray-500 text-xs font-semibold uppercase tracking-wider">Tahun Berdiri</span>
             </motion.div>
 
-            {/* Stat Card 3 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center gap-3 hover:shadow-md transition-shadow"
+              className="bg-white p-8 rounded-[32px] border border-gray-150/70 shadow-xs flex flex-col items-center justify-center text-center gap-3 hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
-              <div className="p-3.5 bg-accent/20 text-amber-600 rounded-2xl">
+              <div className="p-4 bg-accent/20 text-amber-600 rounded-full">
                 <Users className="w-6 h-6" />
               </div>
               <div ref={c3.ref} className="font-heading text-5xl font-bold text-dark mt-2">

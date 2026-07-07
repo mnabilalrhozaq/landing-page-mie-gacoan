@@ -67,7 +67,7 @@ export function Footer({
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2.5 bg-gray-800 hover:bg-primary rounded-full text-gray-300 hover:text-white transition-all duration-300 shadow-sm"
+                    className="p-3 bg-gray-800 hover:bg-primary rounded-full text-gray-300 hover:text-white transition-all duration-300 hover:shadow-[0_0_15px_rgba(238,43,116,0.45)] hover:scale-105 shadow-sm"
                     title={social.name}
                   >
                     {IconComponent ? (

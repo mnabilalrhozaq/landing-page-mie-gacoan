@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion, stagger, useAnimate, useInView } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const TypewriterEffect = ({
   words,
@@ -34,7 +34,6 @@ export const TypewriterEffect = ({
         {
           display: "inline-block",
           opacity: 1,
-          width: "fit-content",
         },
         {
           duration: 0.2,
@@ -53,9 +52,9 @@ export const TypewriterEffect = ({
             <div key={`word-${idx}`} className="inline-block whitespace-nowrap">
               {word.text.map((char, index) => (
                 <motion.span
-                  initial={{ opacity: 0 }}
+                  initial={{ opacity: 0, display: "none" }}
                   key={`char-${index}`}
-                  className={cn(`text-dark opacity-0 font-body`, word.className)}
+                  className={cn(`text-dark font-body`, word.className)}
                 >
                   {char}
                 </motion.span>
@@ -94,18 +93,18 @@ export const TypewriterEffectSmooth = ({
   const isInView = useInView(ref, { once: true, amount: 0.5 });
 
   return (
-    <div ref={ref} className={cn("flex flex-col items-center justify-center my-4", className)}>
-      <div className="flex items-center justify-center relative">
+    <div ref={ref} className={cn("flex flex-col items-center justify-center my-4 w-full px-4", className)}>
+      <div className="flex items-center justify-center relative w-full sm:w-auto max-w-full">
         <motion.div
           initial={{ width: "0%" }}
-          animate={isInView ? { width: "100%" } : { width: "0%" }}
+          animate={isInView ? { width: "fit-content" } : { width: "0%" }}
           transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="overflow-hidden whitespace-nowrap flex"
+          className="overflow-hidden"
         >
-          <h2 className="flex font-heading text-3xl sm:text-4xl md:text-5xl text-dark leading-tight tracking-wide font-bold">
+          <h2 className="font-heading text-2xl xs:text-3xl sm:text-4xl md:text-5xl text-dark leading-tight tracking-wide font-extrabold text-center whitespace-nowrap">
             {words.map((word, idx) => {
               return (
-                <span key={`word-${idx}`} className={cn("whitespace-nowrap", word.className)}>
+                <span key={`word-${idx}`} className={cn("inline-block", word.className)}>
                   {word.text}&nbsp;
                 </span>
               );

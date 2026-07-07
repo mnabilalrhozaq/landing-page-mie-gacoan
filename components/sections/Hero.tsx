@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -50,6 +50,11 @@ export function Hero({
 }: HeroProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [transitionCooldown, setTransitionCooldown] = useState(false);
+  // Blocks scroll-to-next-section until last slide's content animations finish
+  const [lastSlideReady, setLastSlideReady] = useState(false);
+  const lastSlideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalSlides = 3;
 
@@ -98,15 +103,151 @@ export function Hero({
 
   const [[page, direction], setPage] = useState([0, 0]);
 
-  const paginate = (newDirection: number) => {
-    setPage([page + newDirection, newDirection]);
+  const paginate = useCallback((newDirection: number) => {
+    setPage((prev) => [prev[0] + newDirection, newDirection]);
     setCurrentSlide((prev) => {
       let next = prev + newDirection;
       if (next < 0) next = totalSlides - 1;
       if (next >= totalSlides) next = 0;
+
+      // If landing on the last slide, block scroll until content is fully rendered
+      if (next === totalSlides - 1) {
+        setLastSlideReady(false);
+        if (lastSlideTimerRef.current) clearTimeout(lastSlideTimerRef.current);
+        // 1400ms ≈ slide transition (600ms) + stagger cards (3 × ~200ms) + buffer
+        lastSlideTimerRef.current = setTimeout(() => setLastSlideReady(true), 1400);
+      }
+
       return next;
     });
-  };
+  }, [totalSlides]);
+
+  // Scroll Interception & Navigation Locking Logic
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (window.scrollY > 50) return;
+
+    const atLastSlide = currentSlide === totalSlides - 1;
+    const atFirstSlide = currentSlide === 0;
+
+    // At last slide: only release scroll when content animations are done
+    if (e.deltaY > 0 && atLastSlide) {
+      if (!lastSlideReady) {
+        e.preventDefault(); // still block until animations finish
+      }
+      return;
+    }
+
+    // At first slide scrolling up → let page scroll naturally
+    if (e.deltaY < 0 && atFirstSlide) return;
+
+    // Still have slides to navigate → block page scroll
+    e.preventDefault();
+
+    if (transitionCooldown) return;
+
+    if (e.deltaY > 0 && !atLastSlide) {
+      setTransitionCooldown(true);
+      paginate(1);
+      setTimeout(() => setTransitionCooldown(false), 900);
+    } else if (e.deltaY < 0 && !atFirstSlide) {
+      setTransitionCooldown(true);
+      paginate(-1);
+      setTimeout(() => setTransitionCooldown(false), 900);
+    }
+  }, [currentSlide, transitionCooldown, paginate, totalSlides, lastSlideReady]);
+
+  const touchStartY = useRef(0);
+  const touchStartX = useRef(0);
+  // null = not yet determined, 'vertical' = locked as vertical swipe, 'horizontal' = locked as horizontal
+  const touchLocked = useRef<'vertical' | 'horizontal' | null>(null);
+  const touchPaginated = useRef(false);
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+    touchLocked.current = null;
+    touchPaginated.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    // Only intercept when hero is in view (user hasn't scrolled past it)
+    if (window.scrollY > 50) return;
+
+    const deltaY = touchStartY.current - e.touches[0].clientY;
+    const deltaX = touchStartX.current - e.touches[0].clientX;
+
+    // Lock swipe direction early (after just 8px of movement)
+    if (!touchLocked.current && (Math.abs(deltaY) > 8 || Math.abs(deltaX) > 8)) {
+      touchLocked.current = Math.abs(deltaY) >= Math.abs(deltaX) ? 'vertical' : 'horizontal';
+    }
+
+    if (touchLocked.current === 'vertical') {
+      const swipingDown = deltaY > 0; // finger moved up = swipe down = next slide
+      const swipingUp = deltaY < 0;   // finger moved down = swipe up = prev slide
+
+      const atLastSlide = currentSlide === totalSlides - 1;
+      const atFirstSlide = currentSlide === 0;
+
+      if (swipingDown && atLastSlide) {
+        // Only release to page scroll once last-slide content is fully shown
+        if (!lastSlideReady) {
+          if (e.cancelable) e.preventDefault();
+        }
+        return;
+      }
+
+      if (swipingUp && atFirstSlide) {
+        // Let page scroll up naturally
+        return;
+      }
+
+      // Still have slides to show → block page scroll
+      if (e.cancelable) e.preventDefault();
+
+      // Only paginate once per gesture
+      if (touchPaginated.current || transitionCooldown) return;
+
+      if (deltaY > 40 && !atLastSlide) {
+        touchPaginated.current = true;
+        setTransitionCooldown(true);
+        paginate(1);
+        setTimeout(() => setTransitionCooldown(false), 900);
+      } else if (deltaY < -40 && !atFirstSlide) {
+        touchPaginated.current = true;
+        setTransitionCooldown(true);
+        paginate(-1);
+        setTimeout(() => setTransitionCooldown(false), 900);
+      }
+    }
+  }, [currentSlide, transitionCooldown, paginate, totalSlides, lastSlideReady]);
+
+  const handleTouchEnd = useCallback(() => {
+    touchLocked.current = null;
+    touchPaginated.current = false;
+  }, []);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    element.addEventListener("wheel", handleWheel, { passive: false });
+    element.addEventListener("touchstart", handleTouchStart, { passive: true });
+    element.addEventListener("touchmove", handleTouchMove, { passive: false });
+    element.addEventListener("touchend", handleTouchEnd, { passive: true });
+    return () => {
+      element.removeEventListener("wheel", handleWheel);
+      element.removeEventListener("touchstart", handleTouchStart);
+      element.removeEventListener("touchmove", handleTouchMove);
+      element.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd]);
+
+  // Cleanup last-slide timer on unmount
+  useEffect(() => {
+    return () => {
+      if (lastSlideTimerRef.current) clearTimeout(lastSlideTimerRef.current);
+    };
+  }, []);
 
   // Stagger variants for list item animations
   const staggerContainer = {
@@ -122,50 +263,64 @@ export function Hero({
   const itemFadeInUp = {
     hidden: { opacity: 0, y: 30 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
-  };
-
-  return (
+  };  return (
     <section
       id="home"
-      className="relative w-full h-[90vh] md:h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-light via-white to-orange-50/20"
+      ref={containerRef}
+      className="relative w-full h-[90vh] md:h-screen flex items-center justify-center overflow-hidden bg-dark"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 3D Particle Background */}
-      <ParticleBackground />
+      {/* 3D Particle Background — sits above slide images but below text content */}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <ParticleBackground />
+      </div>
 
-      {/* Background radial gradient decoration */}
-      <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
+      <AnimatePresence initial={false} custom={direction} mode="wait">
+        {currentSlide === 0 && (
+          <motion.div
+            key="slide-1"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 w-full h-full flex items-center justify-center"
+          >
+            {/* Slide 1 Background Image */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {slides[0]?.image ? (
+                <Image
+                  src={slides[0].image}
+                  alt="Background Slide 1"
+                  fill
+                  className="object-cover opacity-95"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-rose-950 via-red-900 to-orange-900" />
+              )}
+              {/* Overlay gradient */}
+              <div className="absolute inset-0 bg-dark/60 md:bg-dark/50" />
+            </div>
 
-      {/* Main Slides Content */}
-      <div className="relative w-full h-full max-w-7xl mx-auto flex items-center px-4 md:px-8 z-10">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
-          {currentSlide === 0 && (
-            <motion.div
-              key="slide-1"
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
-            >
-              <div className="flex flex-col gap-6 text-left">
+            {/* Content inside standard grid */}
+            <div className="relative w-full h-full max-w-7xl mx-auto flex items-center px-6 md:px-12 z-30">
+              <div className="flex flex-col gap-6 text-left max-w-2xl px-4 md:px-0">
                 <motion.span
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full w-fit shadow-xs uppercase tracking-wider"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full w-fit shadow-xs uppercase tracking-wider"
                 >
-                  <Sparkles className="w-3.5 h-3.5 fill-primary text-primary animate-pulse" />
+                  <Sparkles className="w-3.5 h-3.5 fill-white text-white animate-pulse" />
                   MIE PEDAS NO. 1 DI INDONESIA
                 </motion.span>
                 <motion.h1
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25, type: "spring", stiffness: 80 }}
-                  className="font-heading text-6xl md:text-8xl text-dark leading-none font-bold tracking-wide"
+                  className="font-heading text-5xl sm:text-7xl md:text-8xl text-white leading-none font-bold tracking-wide"
                 >
                   MIE GACOAN
                 </motion.h1>
@@ -173,7 +328,7 @@ export function Hero({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35 }}
-                  className="font-body text-gray-600 text-base md:text-lg leading-relaxed max-w-lg"
+                  className="font-body text-gray-200 text-base md:text-lg leading-relaxed"
                 >
                   Sajian mie pedas legendaris dengan bumbu gurih melimpah, dimsum lezat, dan es buah segar. Nikmati kebersamaan seru di outlet kami.
                 </motion.p>
@@ -195,7 +350,7 @@ export function Hero({
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-secondary text-secondary hover:bg-secondary/10 rounded-xl"
+                    className="border-white text-white hover:bg-white/10 hover:text-white rounded-xl"
                     onClick={() => {
                       document.getElementById("outlets")?.scrollIntoView({ behavior: "smooth" });
                     }}
@@ -204,59 +359,42 @@ export function Hero({
                   </Button>
                 </motion.div>
               </div>
-              
-              {/* Premium Floating Hero Image */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 100, damping: 15 }}
-                className="relative w-full h-64 md:h-[400px] flex items-center justify-center cursor-pointer"
-              >
-                <motion.div
-                  animate={{
-                    y: [0, -16, 0],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 5,
-                    ease: "easeInOut",
-                  }}
-                  whileHover={{ scale: 1.05, rotate: 1.5 }}
-                  className="relative w-full h-full"
-                >
-                  {slides.length > 0 ? (
-                    <Image
-                      src={slides[0].image}
-                      alt="Mie Gacoan Hero"
-                      fill
-                      className="object-contain drop-shadow-[0_20px_40px_rgba(238,43,116,0.25)]"
-                      priority
-                    />
-                  ) : (
-                    <div className="w-72 h-72 md:w-[350px] md:h-[350px] bg-primary/5 rounded-full flex items-center justify-center border-4 border-dashed border-primary/20">
-                      <span className="font-heading text-primary text-4xl animate-bounce">Mie Gacoan Promo</span>
-                    </div>
-                  )}
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          )}
+            </div>
+          </motion.div>
+        )}
 
-          {currentSlide === 1 && (
-            <motion.div
-              key="slide-2"
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="w-full flex flex-col items-center justify-center text-center gap-6"
-            >
+        {currentSlide === 1 && (
+          <motion.div
+            key="slide-2"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 w-full h-full flex items-center justify-center"
+          >
+            {/* Slide 2 Background Image */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {slides[1]?.image ? (
+                <Image
+                  src={slides[1].image}
+                  alt="Background Slide 2"
+                  fill
+                  className="object-cover opacity-95"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-red-950 via-rose-900 to-pink-900" />
+              )}
+              <div className="absolute inset-0 bg-dark/65" />
+            </div>
+
+            <div className="relative w-full h-full max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-6 px-6 md:px-12 z-30">
               <motion.h2
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="font-heading text-5xl md:text-7xl text-dark font-bold tracking-wide"
+                className="font-heading text-4xl md:text-7xl text-white font-bold tracking-wide"
               >
                 MENGAPA PILIH MIE GACOAN?
               </motion.h2>
@@ -264,7 +402,7 @@ export function Hero({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="font-body text-gray-500 max-w-xl text-sm md:text-base leading-relaxed"
+                className="font-body text-gray-200 max-w-xl text-sm md:text-base leading-relaxed"
               >
                 Kami berkomitmen memberikan kualitas hidangan terbaik dengan pengalaman bersantap yang tak terlupakan.
               </motion.p>
@@ -287,34 +425,52 @@ export function Hero({
                     variants={itemFadeInUp}
                     whileHover={{ y: -8, scale: 1.02 }}
                     className={cn(
-                      "p-6 bg-white/85 backdrop-blur-sm border border-gray-150 rounded-[28px] flex flex-col items-center gap-3 shadow-sm hover:shadow-lg transition-all duration-300",
+                      "p-4 md:p-6 bg-white/90 backdrop-blur-sm border border-gray-155 rounded-[28px] flex flex-col items-center gap-3 shadow-sm hover:shadow-lg transition-all duration-300",
                       item.color
                     )}
                   >
                     <span className="text-4xl filter drop-shadow-md select-none">{item.icon}</span>
                     <h3 className="font-body font-bold text-dark text-sm md:text-base">{item.title}</h3>
-                    <p className="font-body text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+                    <p className="font-body text-gray-600 text-xs leading-relaxed">{item.desc}</p>
                   </motion.div>
                 ))}
               </motion.div>
-            </motion.div>
-          )}
+            </div>
+          </motion.div>
+        )}
 
-          {currentSlide === 2 && (
-            <motion.div
-              key="slide-3"
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="w-full flex flex-col items-center justify-center text-center gap-6"
-            >
+        {currentSlide === 2 && (
+          <motion.div
+            key="slide-3"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 w-full h-full flex items-center justify-center"
+          >
+            {/* Slide 3 Background Image */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {slides[2]?.image ? (
+                <Image
+                  src={slides[2].image}
+                  alt="Background Slide 3"
+                  fill
+                  className="object-cover opacity-95"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-orange-950 via-red-900 to-rose-950" />
+              )}
+              <div className="absolute inset-0 bg-dark/65" />
+            </div>
+
+            <div className="relative w-full h-full max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-6 px-6 md:px-12 z-30">
               <motion.h2
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="font-heading text-5xl md:text-7xl text-dark font-bold tracking-wide"
+                className="font-heading text-4xl md:text-7xl text-white font-bold tracking-wide"
               >
                 INFORMASI OUTLET UTAMA
               </motion.h2>
@@ -322,7 +478,7 @@ export function Hero({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="font-body text-gray-500 max-w-xl text-sm md:text-base leading-relaxed"
+                className="font-body text-gray-200 max-w-xl text-sm md:text-base leading-relaxed"
               >
                 Mie Gacoan melayani jutaan pelanggan setiap hari di ratusan cabang di seluruh penjuru Indonesia.
               </motion.p>
@@ -343,39 +499,23 @@ export function Hero({
                     key={index}
                     variants={itemFadeInUp}
                     whileHover={{ y: -8, scale: 1.03 }}
-                    className="p-8 bg-white/85 backdrop-blur-sm border border-gray-155 rounded-[32px] flex flex-col items-center gap-4 shadow-sm hover:shadow-lg transition-all duration-300"
+                    className="p-6 md:p-8 bg-white/90 backdrop-blur-sm border border-gray-155 rounded-[32px] flex flex-col items-center gap-4 shadow-sm hover:shadow-lg transition-all duration-300"
                   >
                     <div className={cn("p-4 rounded-2xl border", item.bg)}>
                       {item.icon}
                     </div>
-                    <h3 className="font-body text-gray-400 text-xs font-bold uppercase tracking-widest">{item.title}</h3>
-                    <p className="font-heading text-4xl text-dark font-black tracking-wide">{item.val}</p>
+                    <h3 className="font-body text-gray-450 text-xs font-bold uppercase tracking-widest">{item.title}</h3>
+                    <p className="font-heading text-3xl md:text-4xl text-dark font-black tracking-wide">{item.val}</p>
                   </motion.div>
                 ))}
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Nav Controls */}
-      <button
-        onClick={() => paginate(-1)}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-2.5 md:p-3.5 bg-white/60 backdrop-blur-md hover:bg-white/90 rounded-full text-dark border border-gray-200/50 shadow-md hover:shadow-lg transition-all cursor-pointer"
-        title="Slide Sebelumnya"
-      >
-        <ChevronLeft className="w-5 h-5 md:w-6 h-6" />
-      </button>
-      <button
-        onClick={() => paginate(1)}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-2.5 md:p-3.5 bg-white/60 backdrop-blur-md hover:bg-white/90 rounded-full text-dark border border-gray-200/50 shadow-md hover:shadow-lg transition-all cursor-pointer"
-        title="Slide Berikutnya"
-      >
-        <ChevronRight className="w-5 h-5 md:w-6 h-6" />
-      </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-6 flex gap-2.5 z-20 select-none">
+      <div className="absolute bottom-6 flex gap-2.5 z-30 select-none">
         {[...Array(totalSlides)].map((_, idx) => (
           <button
             key={idx}
@@ -385,7 +525,7 @@ export function Hero({
             }}
             className={cn(
               "w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer",
-              currentSlide === idx ? "bg-primary w-6" : "bg-gray-300 hover:bg-gray-400"
+              currentSlide === idx ? "bg-primary w-6" : "bg-white/40 hover:bg-white/70"
             )}
             title={`Buka Slide ${idx + 1}`}
           />

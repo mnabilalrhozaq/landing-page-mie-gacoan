@@ -7,7 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Menu as MenuType } from "@/types";
 
-export const revalidate = 60; // ISR 60 seconds
+export const dynamic = 'force-dynamic';
 
 async function getMenuData() {
   const [menus, siteLogo, tagline, socials] = await Promise.all([

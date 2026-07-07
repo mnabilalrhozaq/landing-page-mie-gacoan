@@ -1,6 +1,7 @@
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -9,24 +10,24 @@ generator client {
 
 model Admin {
   id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(100)
-  email      String   @unique @db.VarChar(150)
-  password   String   @db.VarChar(255)
+  name       String
+  email      String   @unique
+  password   String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
 model SiteContent {
   id        Int      @id @default(autoincrement())
-  key       String   @unique @db.VarChar(100)
-  value     String   @db.Text
+  key       String   @unique
+  value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model HeroSlide {
   id        Int      @id @default(autoincrement())
-  image     String   @db.VarChar(255)
+  image     String
   order     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -35,9 +36,9 @@ model HeroSlide {
 
 model SocialMedia {
   id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(100)
-  icon      String   @db.VarChar(50)
-  url       String   @db.VarChar(500)
+  name      String
+  icon      String
+  url       String
   isActive  Boolean  @default(true)
   order     Int      @default(0)
   createdAt DateTime @default(now())
@@ -46,13 +47,13 @@ model SocialMedia {
 
 model Menu {
   id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(150)
-  slug        String       @unique @db.VarChar(150)
+  name        String
+  slug        String       @unique
   category    MenuCategory
-  description String?      @db.Text
+  description String?
   price       Int
   spicyLevel  Int          @default(0)
-  image       String?      @db.VarChar(255)
+  image       String?
   isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -66,11 +67,11 @@ enum MenuCategory {
 
 model Package {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(150)
-  description String?  @db.Text
+  name        String
+  description String?
   price       Int
-  badge       String?  @db.VarChar(50)
-  image       String?  @db.VarChar(255)
+  badge       String?
+  image       String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -78,11 +79,11 @@ model Package {
 
 model Outlet {
   id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(150)
-  city      String   @db.VarChar(100)
-  address   String   @db.Text
-  openTime  String?  @db.VarChar(20)
-  mapsUrl   String?  @db.VarChar(500)
+  name      String
+  city      String
+  address   String
+  openTime  String?
+  mapsUrl   String?
   isOpen    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,19 +91,19 @@ model Outlet {
 
 model Gallery {
   id        Int      @id @default(autoincrement())
-  image     String   @db.VarChar(255)
-  caption   String?  @db.VarChar(255)
-  category  String   @default("Umum") @db.VarChar(100)
+  image     String
+  caption   String?
+  category  String   @default("Umum")
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Testimonial {
-  id         Int      @id @default(autoincrement())
-  name       String?  @db.VarChar(100)
-  rating     Int
-  content    String   @db.Text
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String?
+  rating    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

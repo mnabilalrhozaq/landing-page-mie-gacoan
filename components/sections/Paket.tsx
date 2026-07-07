@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Sparkles, ShoppingBag, Flame } from "lucide-react";
@@ -14,6 +14,11 @@ interface PaketSectionProps {
 
 export function Paket({ packages = [] }: PaketSectionProps) {
   const activePackages = packages.filter((p) => p.isActive);
+  const [activePackageId, setActivePackageId] = useState<number | null>(null);
+
+  const handleCardClick = (id: number) => {
+    setActivePackageId((prev) => (prev === id ? null : id));
+  };
 
   const titleWords = [
     { text: "Menu" },
@@ -40,7 +45,7 @@ export function Paket({ packages = [] }: PaketSectionProps) {
   };
 
   return (
-    <section id="paket" className="relative py-20 px-4 md:px-8 bg-light scroll-mt-20">
+    <section id="paket" className="relative py-20 px-4 md:px-8 bg-light overflow-hidden scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header */}
         <TypewriterEffectSmooth words={titleWords} />
@@ -66,8 +71,11 @@ export function Paket({ packages = [] }: PaketSectionProps) {
               <motion.div
                 variants={cardVariants}
                 key={pkg.id}
-                className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative aspect-[4/3] min-h-[250px] group"
+                className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow relative aspect-[4/3] min-h-[250px] group cursor-pointer select-none"
                 data-cursor-text={pkg.name}
+                whileHover="hover"
+                onClick={() => handleCardClick(pkg.id)}
+                animate={activePackageId === pkg.id ? "hover" : "initial"}
               >
                 {/* Package Image / Fallback */}
                 <div className="relative w-full h-full">
@@ -103,11 +111,14 @@ export function Paket({ packages = [] }: PaketSectionProps) {
                   <span className="font-heading text-2xl font-bold text-secondary">Rp {pkg.price.toLocaleString("id-ID")}</span>
                 </div>
 
-                {/* Hover slide-up overlay */}
+                {/* Hover/Tap slide-up overlay */}
                 <motion.div
                   className="absolute inset-0 bg-dark/95 p-6 flex flex-col justify-between text-left text-white z-20 pointer-events-none"
                   initial={{ y: "100%" }}
-                  whileHover={{ y: 0 }}
+                  variants={{
+                    hover: { y: 0 },
+                    initial: { y: "100%" }
+                  }}
                   transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
                 >
                   <div className="flex flex-col gap-2">

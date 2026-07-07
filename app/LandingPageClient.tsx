@@ -48,7 +48,7 @@ export default function LandingPageClient({ data }: LandingPageClientProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col min-h-screen"
+            className="flex flex-col min-h-screen overflow-x-hidden"
           >
             {/* 1. Navbar */}
             <Navbar logoUrl={content.site_logo} />

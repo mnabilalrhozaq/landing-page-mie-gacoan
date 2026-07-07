@@ -15,6 +15,11 @@ interface MenuSectionProps {
 export function Menu({ menus = [] }: MenuSectionProps) {
   const [activeCategory, setActiveCategory] = useState<"semua" | "mie" | "dimsum" | "minuman">("semua");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+
+  const handleCardClick = (id: number) => {
+    setActiveMenuId((prev) => (prev === id ? null : id));
+  };
 
   const menuWords = [
     { text: "Menu" },
@@ -53,7 +58,7 @@ export function Menu({ menus = [] }: MenuSectionProps) {
   };
 
   return (
-    <section id="menu" className="relative py-20 px-4 md:px-8 bg-white scroll-mt-20">
+    <section id="menu" className="relative py-20 px-4 md:px-8 bg-white overflow-hidden scroll-mt-20">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header */}
         <TypewriterEffectSmooth words={menuWords} />
@@ -115,8 +120,11 @@ export function Menu({ menus = [] }: MenuSectionProps) {
                   key={menu.id}
                   variants={cardVariants}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="bg-light border border-gray-100 rounded-3xl overflow-hidden shadow-sm relative group aspect-[4/3] min-h-[250px]"
+                  className="bg-light border border-gray-100 rounded-3xl overflow-hidden shadow-sm relative group aspect-[4/3] min-h-[250px] cursor-pointer select-none"
                   data-cursor-text={menu.name}
+                  whileHover="hover"
+                  onClick={() => handleCardClick(menu.id)}
+                  animate={activeMenuId === menu.id ? "hover" : "initial"}
                 >
                   {/* Food Image */}
                   <div className="relative w-full h-full">
@@ -153,11 +161,14 @@ export function Menu({ menus = [] }: MenuSectionProps) {
                     <span className="font-heading text-2xl font-bold text-accent">Rp {menu.price.toLocaleString("id-ID")}</span>
                   </div>
 
-                  {/* Hover Slide-up Overlay */}
+                  {/* Hover/Tap Slide-up Overlay */}
                   <motion.div
                     className="absolute inset-0 bg-dark/95 p-6 flex flex-col justify-between text-left text-white z-20 pointer-events-none"
                     initial={{ y: "100%" }}
-                    whileHover={{ y: 0 }}
+                    variants={{
+                      hover: { y: 0 },
+                      initial: { y: "100%" }
+                    }}
                     transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
                   >
                     <div className="flex flex-col gap-2">
