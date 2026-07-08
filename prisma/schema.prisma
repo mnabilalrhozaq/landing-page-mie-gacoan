@@ -12,7 +12,7 @@ model Admin {
   id         Int      @id @default(autoincrement())
   name       String
   email      String   @unique
-  password   String
+  password   String   @db.VarChar(255)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -20,14 +20,14 @@ model Admin {
 model SiteContent {
   id        Int      @id @default(autoincrement())
   key       String   @unique
-  value     String
+  value     String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model HeroSlide {
   id        Int      @id @default(autoincrement())
-  image     String
+  image     String   @db.VarChar(255)
   order     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -38,7 +38,7 @@ model SocialMedia {
   id        Int      @id @default(autoincrement())
   name      String
   icon      String
-  url       String
+  url       String   @db.VarChar(500)
   isActive  Boolean  @default(true)
   order     Int      @default(0)
   createdAt DateTime @default(now())
@@ -50,10 +50,10 @@ model Menu {
   name        String
   slug        String       @unique
   category    MenuCategory
-  description String?
+  description String?      @db.Text
   price       Int
   spicyLevel  Int          @default(0)
-  image       String?
+  image       String?      @db.VarChar(255)
   isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -68,10 +68,10 @@ enum MenuCategory {
 model Package {
   id          Int      @id @default(autoincrement())
   name        String
-  description String?
+  description String?  @db.Text
   price       Int
   badge       String?
-  image       String?
+  image       String?  @db.VarChar(255)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -81,9 +81,9 @@ model Outlet {
   id        Int      @id @default(autoincrement())
   name      String
   city      String
-  address   String
+  address   String   @db.Text
   openTime  String?
-  mapsUrl   String?
+  mapsUrl   String?  @db.VarChar(1000)
   isOpen    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,8 +91,8 @@ model Outlet {
 
 model Gallery {
   id        Int      @id @default(autoincrement())
-  image     String
-  caption   String?
+  image     String   @db.VarChar(255)
+  caption   String?  @db.VarChar(255)
   category  String   @default("Umum")
   order     Int      @default(0)
   createdAt DateTime @default(now())
@@ -103,7 +103,7 @@ model Testimonial {
   id        Int      @id @default(autoincrement())
   name      String?
   rating    Int
-  content   String
+  content   String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
