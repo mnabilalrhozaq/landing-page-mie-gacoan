@@ -101,7 +101,7 @@ export const TypewriterEffectSmooth = ({
           transition={{ duration: 1.2, ease: "easeInOut" }}
           className="overflow-hidden"
         >
-          <h2 className="font-heading text-2xl xs:text-3xl sm:text-4xl md:text-5xl text-dark leading-tight tracking-wide font-extrabold text-center whitespace-nowrap">
+          <h2 className="font-heading text-3xl xs:text-4xl sm:text-5xl md:text-6xl text-dark leading-tight tracking-wide font-extrabold text-center whitespace-nowrap">
             {words.map((word, idx) => {
               return (
                 <span key={`word-${idx}`} className={cn("inline-block", word.className)}>
