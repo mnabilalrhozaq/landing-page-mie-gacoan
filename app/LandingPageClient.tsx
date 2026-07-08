@@ -115,6 +115,9 @@ export default function LandingPageClient({ data }: LandingPageClientProps) {
               <Lokasi
                 embedUrl={content.lokasi_embed_url}
                 directionsUrl={content.lokasi_directions_url}
+                title={content.lokasi_title}
+                desc={content.lokasi_desc}
+                buttonText={content.lokasi_button_text}
               />
             </main>
 

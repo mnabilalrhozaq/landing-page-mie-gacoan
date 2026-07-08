@@ -50,6 +50,9 @@ async function main() {
     { key: 'footer_tagline',  value: 'Pedas, Murah, Bikin Nagih' },
     { key: 'lokasi_embed_url', value: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15865.312933939626!2d106.8271528!3d-6.2297465!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e449a562ef%3A0x973a98cc78fb3c6d!2sMie%20Gacoan%20Kuningan!5e0!3m2!1sid!2sid!4v1718876400000!5m2!1sid!2sid' },
     { key: 'lokasi_directions_url', value: 'https://maps.app.goo.gl/y5f6XNuHn3sVqDkPA' },
+    { key: 'lokasi_title', value: 'Kunjungi Outlet Jagoan Terdekat Anda!' },
+    { key: 'lokasi_desc', value: 'Makan langsung di tempat (*dine-in*) untuk merasakan suasana ramai, seru, dan asik khas Mie Gacoan. Kami juga melayani pesan antar (*delivery*) atau dibawa pulang (*take-away*).' },
+    { key: 'lokasi_button_text', value: 'Buka di Google Maps' },
   ];
 
   await prisma.siteContent.createMany({ data: defaultContents });

@@ -11,6 +11,9 @@ export default function LokasiPage() {
   const [formData, setFormData] = useState({
     lokasi_embed_url: "",
     lokasi_directions_url: "",
+    lokasi_title: "",
+    lokasi_desc: "",
+    lokasi_button_text: "",
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +30,9 @@ export default function LokasiPage() {
           setFormData({
             lokasi_embed_url: data.lokasi_embed_url || "",
             lokasi_directions_url: data.lokasi_directions_url || "",
+            lokasi_title: data.lokasi_title || "",
+            lokasi_desc: data.lokasi_desc || "",
+            lokasi_button_text: data.lokasi_button_text || "",
           });
         }
       } catch (err) {
@@ -135,8 +141,52 @@ export default function LokasiPage() {
             <div className="bg-white border border-gray-200/60 p-6 rounded-[28px] shadow-sm flex flex-col gap-4">
               <h3 className="font-bold text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
                 <Compass className="w-4 h-4 text-secondary" />
-                Konfigurasi Peta
+                Konfigurasi Peta & Informasi Lokasi
               </h3>
+
+              {/* Title */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  Judul Section Lokasi
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Kunjungi Outlet Jagoan Terdekat Anda!"
+                  value={formData.lokasi_title}
+                  onChange={(e) => setFormData({ ...formData, lokasi_title: e.target.value })}
+                  className="text-xs"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  Deskripsi Lokasi
+                </label>
+                <textarea
+                  placeholder="Makan langsung di tempat..."
+                  value={formData.lokasi_desc}
+                  onChange={(e) => setFormData({ ...formData, lokasi_desc: e.target.value })}
+                  className="flex min-h-[80px] w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs ring-offset-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  required
+                />
+              </div>
+
+              {/* Button Text */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  Teks Tombol
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Buka di Google Maps"
+                  value={formData.lokasi_button_text}
+                  onChange={(e) => setFormData({ ...formData, lokasi_button_text: e.target.value })}
+                  className="text-xs"
+                  required
+                />
+              </div>
 
               {/* Embed URL */}
               <div className="flex flex-col gap-1.5">
