@@ -68,7 +68,7 @@ export function Hero({
 
   useEffect(() => {
     if (isHovered) return;
-    const interval = setInterval(nextSlide, 5000);
+    const interval = setInterval(nextSlide, 8000);
     return () => clearInterval(interval);
   }, [isHovered, nextSlide]);
 
@@ -488,24 +488,24 @@ export function Hero({
                 variants={staggerContainer}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full max-w-4xl"
+                className="grid grid-cols-3 gap-3 md:gap-6 mt-8 w-full max-w-4xl"
               >
                 {[
-                  { icon: <Clock className="w-8 h-8" />, title: "Jam Buka", val: infoJam, bg: "bg-secondary/10 text-secondary border-secondary/20" },
-                  { icon: <MapPin className="w-8 h-8" />, title: "Total Cabang", val: `${infoCabang} Outlet`, bg: "bg-primary/10 text-primary border-primary/20" },
-                  { icon: <BadgeDollarSign className="w-8 h-8" />, title: "Harga Mulai", val: `Rp ${infoHarga}`, bg: "bg-accent/15 text-amber-600 border-accent/25" },
+                  { icon: <Clock className="w-5 h-5 md:w-8 md:h-8" />, title: "Jam Buka", val: infoJam, bg: "bg-secondary/10 text-secondary border-secondary/20" },
+                  { icon: <MapPin className="w-5 h-5 md:w-8 md:h-8" />, title: "Total Cabang", val: `${infoCabang} Outlet`, bg: "bg-primary/10 text-primary border-primary/20" },
+                  { icon: <BadgeDollarSign className="w-5 h-5 md:w-8 md:h-8" />, title: "Harga Mulai", val: `Rp ${infoHarga}`, bg: "bg-accent/15 text-amber-600 border-accent/25" },
                 ].map((item, index) => (
                   <motion.div
                     key={index}
                     variants={itemFadeInUp}
                     whileHover={{ y: -8, scale: 1.03 }}
-                    className="p-6 md:p-8 bg-white/90 backdrop-blur-sm border border-gray-155 rounded-[32px] flex flex-col items-center gap-4 shadow-sm hover:shadow-lg transition-all duration-300"
+                    className="p-3 md:p-8 bg-white/90 backdrop-blur-sm border border-gray-155 rounded-[20px] md:rounded-[32px] flex flex-col items-center gap-2 md:gap-4 shadow-sm hover:shadow-lg transition-all duration-300"
                   >
-                    <div className={cn("p-4 rounded-2xl border", item.bg)}>
+                    <div className={cn("p-2 md:p-4 rounded-xl md:rounded-2xl border", item.bg)}>
                       {item.icon}
                     </div>
-                    <h3 className="font-body text-gray-450 text-xs font-bold uppercase tracking-widest">{item.title}</h3>
-                    <p className="font-heading text-3xl md:text-4xl text-dark font-black tracking-wide">{item.val}</p>
+                    <h3 className="font-body text-gray-450 text-[10px] md:text-xs font-bold uppercase tracking-wider md:tracking-widest text-center">{item.title}</h3>
+                    <p className="font-heading text-sm sm:text-lg md:text-4xl text-dark font-black tracking-wide text-center">{item.val}</p>
                   </motion.div>
                 ))}
               </motion.div>
